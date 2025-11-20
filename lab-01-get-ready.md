@@ -46,6 +46,8 @@ In this lab, you will:
 - Verify your email address if required
 - Log in to [https://app.kosli.com](https://app.kosli.com)
 
+So far so good :tada:. We will go a lot more in detail with Kosli in the next sections, but for now we need the scaffolding set up.
+
 #### Make a copy of the repository
 
 - Navigate to the labs repositorys main page (the repository you're currently viewing)
