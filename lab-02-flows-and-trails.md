@@ -138,9 +138,9 @@ See [kosli begin trail](https://docs.kosli.com/client_reference/kosli_begin_trai
 
 #TODO: Create something in the trial to see in kosli
 
-#### Create CI scripts for Flow and Trail management
+#### Integrate Kosli into your CI/CD pipeline
 
-Now let's integrate Flow and Trail creation into your CI/CD pipeline. Create these shell scripts:
+Now let's integrate Flow and Trail creation into your CI/CD pipeline.
 
 **Add API key as a GitHub Secret:**
 
@@ -149,80 +149,64 @@ Now let's integrate Flow and Trail creation into your CI/CD pipeline. Create the
 3. Click "New repository secret"
 4. Name: `KOSLI_API_TOKEN`
 5. Value: Your Kosli API key
-6. Click "Add secret"
-7. Repeat for `KOSLI_ORG` with your organization name
+6. Click "Variables"
+7. Click "New repository variable"
+8. Repeat for `KOSLI_ORG` with your organization name
 
-> :bulb: Never commit API keys to your repository. Always use environment variables or secrets management.
-
-**Create `ci/update-flow.sh`:**
-
-```bash
-#!/bin/bash
-set -e
-
-echo "Creating/updating Kosli Flow..."
-
-kosli create flow ${APP_NAME}-pipeline \
-  --description "CI/CD pipeline for ${APP_NAME} application" \
-  --use-empty-template
-
-echo "Flow created/updated successfully"
-```
-
-**Create `ci/start-trail.sh`:**
-
-```bash
-#!/bin/bash
-set -e
-
-echo "Beginning Kosli Trail for commit ${GIT_COMMIT}..."
-
-kosli begin trail ${GIT_COMMIT} \
-  --flow ${APP_NAME}-pipeline \
-  --description "Build ${BUILD_NUMBER}: ${GIT_BRANCH}"
-
-echo "Trail started successfully"
-```
-
-Make the scripts executable:
-
-```bash
-chmod +x ci/update-flow.sh
-chmod +x ci/start-trail.sh
-```
-
-> :bulb: These scripts are already referenced in your `.github/workflows/full-pipeline.yaml` workflow. The environment variables like `APP_NAME`, `GIT_COMMIT`, and `BUILD_NUMBER` are set at the workflow level.
+> :bulb: Never commit API keys to your repository via Git. Always use environment variables or secrets management.
 
 #### Update GitHub Actions workflow
 
-To avoid repeating the Kosli credentials in every step, let's add them as global environment variables at the top of your workflow file `.github/workflows/full-pipeline.yaml`:
+We will update the workflow file `.github/workflows/full-pipeline.yaml` to include Kosli commands directly.
+
+**1. Add global environment variables**
+
+To avoid repeating the Kosli credentials in every step, add them as global environment variables at the top of your workflow file:
 
 ```yaml
 env:
   KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-  KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
+  KOSLI_ORG: ${{ vars.KOSLI_ORG }}
   # ... other existing env vars ...
 ```
 
-Then verify the steps to call the scripts are configured (note that we don't need to specify `env` here):
+**2. Add Kosli steps**
+
+Add the following steps to your workflow. Place them just after checking out the code.
 
 ```yaml
-- name: Update Flow
-  run: ci/update-flow.sh
+      - name: Clone down repository
+        uses: actions/checkout@v4
+      
+  #Your new additions
+      - name: Setup Kosli CLI
+        uses: kosli-dev/setup-cli-action@v2
+        with:
+          version:
+            latest
 
-- name: Kosli start trail
-  run: ci/start-trail.sh
+      - name: Create/Update Flow
+        run: |
+          kosli create flow ${APP_NAME}-pipeline \
+            --description "CI/CD pipeline for ${APP_NAME} application" \
+            --use-empty-template
+
+      - name: Begin Trail
+        run: |
+          kosli begin trail ${GIT_COMMIT} \
+            --flow ${APP_NAME}-pipeline \
+            --description "Build ${BUILD_NUMBER}: ${GIT_BRANCH}"
 ```
 
-> :bulb: Setting `env` at the top level ensures the secrets are available to all steps in the workflow. GitHub Actions automatically provides variables like `GITHUB_SHA` which are mapped to `GIT_COMMIT` in the workflow.
+> :bulb: We use the `kosli-dev/setup-cli-action` to install the CLI. The `env` variables we set earlier ensure the CLI is authenticated.
 
 #### Test the integration
 
-1. Commit the new shell scripts to your repository:
+1. Commit the changes to your workflow file:
 
 ```bash
-git add ci/update-flow.sh ci/start-trail.sh
-git commit -m "Add Kosli Flow and Trail scripts"
+git add .github/workflows/full-pipeline.yaml
+git commit -m "Add Kosli Flow and Trail steps"
 git push origin main
 ```
 
@@ -240,10 +224,10 @@ Before moving to the next lab, ensure you have:
 
 - ✅ Kosli CLI installed and can run `kosli version`
 - ✅ API key created and configured as environment variables
-- ✅ API key and organization name added as GitHub Secrets
+- ✅ API key and organization name added as GitHub Secrets and variables
 - ✅ Successfully created a Flow manually using the CLI
 - ✅ Successfully created a Trail manually using a git commit SHA
-- ✅ Created `ci/update-flow.sh` and `ci/start-trail.sh` scripts
+- ✅ Updated workflow with Kosli steps
 - ✅ Workflow runs successfully with Flow and Trail creation
 - ✅ Can see the Flow and Trails in the Kosli web interface
 
