@@ -3,10 +3,7 @@
   "packages": [
     "gradle@6",
     "jdk@11",
-    "binutils",
-    "kubectl",
-    "minikube",
-    "kubernetes-helm-wrapped@latest"
+    "binutils"
   ],
     "shell": {
       "init_hook": [
