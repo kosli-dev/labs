@@ -203,91 +203,47 @@ If your artifact is non-compliant, it might be because:
 
 > :bulb: Policies are evaluated against snapshots, not during builds. This allows you to deploy first and evaluate compliance retrospectively, or enforce it with admission controllers.
 
-#### Create a CI script for snapshotting
+#### Snapshot the environment in CI
 
-**Create `ci/snapshot-env.sh`:**
+Let's integrate automated snapshotting into your workflow by adding a step to the `Deploy` job in `.github/workflows/full-pipeline.yaml`.
 
-```bash
-#!/bin/bash
-set -e
+Add this step after the "Deploy to production" step:
 
-echo "Taking snapshot of production environment..."
-
-# Snapshot the Docker environment
-# In CI, we're snapshotting the container that was just started
-kosli snapshot docker labs-prod \
-  --docker-host unix:///var/run/docker.sock
-
-echo "Environment snapshot completed"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/snapshot-env.sh
+```yaml
+    - name: Kosli snapshot environment
+      run: |
+        kosli snapshot docker labs-prod \
+          --docker-host unix:///var/run/docker.sock
 ```
 
 > :bulb: In your workflow, this runs after the application is deployed. It captures what's running immediately after deployment.
 
-#### Create a CI script for policy management
+#### Manage policy in CI
 
-**Create `ci/update-policy.sh`:**
+Let's automate policy updates by adding a step to your workflow. You can add this to the `Deploy` job, before the deployment happens.
 
-```bash
-#!/bin/bash
-set -e
+Add this step before the "Deploy to production" step:
 
-echo "Updating Kosli policy..."
-
-# Check if policy file exists
-if [ ! -f ".kosli-policy.yml" ]; then
-  echo "No policy file found, skipping..."
-  exit 0
-fi
-
-# Create/update the policy
-kosli create policy kosli-prod-requirements \
-  --policy-file .kosli-policy.yml \
-  --description "Production compliance requirements for ${APP_NAME}"
-
-# Attach to environment (idempotent)
-kosli attach policy kosli-prod-requirements \
-  --environment labs-prod || true
-
-echo "Policy updated successfully"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/update-policy.sh
+```yaml
+    - name: Update Kosli policy
+      run: |
+        if [ -f ".kosli-policy.yml" ]; then
+          kosli create policy kosli-prod-requirements \
+            --policy-file .kosli-policy.yml \
+            --description "Production compliance requirements for ${APP_NAME}"
+          
+          kosli attach policy kosli-prod-requirements \
+            --environment labs-prod || true
+        fi
 ```
 
 #### Verify workflow integration
 
-Your `.github/workflows/full-pipeline.yaml` should have:
-
-```yaml
-- name: Update policy
-  run: ci/update-policy.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-```
-
-And in the Deploy job:
-
-```yaml
-- name: Kosli snapshot environment
-  run: bash ci/snapshot-env.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-```
+Ensure your `.github/workflows/full-pipeline.yaml` now includes the policy update and snapshot steps in the `Deploy` job.
 
 #### Test the complete integration
 
-1. Create the policy file and commit everything:
+1. Create the policy file and commit the changes:
 
 ```bash
 # Create the policy file
@@ -305,8 +261,8 @@ artifacts:
       type: "*"
 EOF
 
-# Commit all scripts and policy
-git add .kosli-policy.yml ci/snapshot-env.sh ci/update-policy.sh
+# Commit policy and workflow
+git add .kosli-policy.yml .github/workflows/full-pipeline.yaml
 git commit -m "Add Kosli environment and policy management"
 git push origin main
 ```
@@ -372,7 +328,7 @@ Before completing this lab, ensure you have:
 - ✅ Successfully taken a manual snapshot of running containers
 - ✅ Created a `.kosli-policy.yml` file with compliance requirements
 - ✅ Created the policy in Kosli and attached it to your environment
-- ✅ Created `ci/snapshot-env.sh` and `ci/update-policy.sh` scripts
+- ✅ Updated workflow with policy update and snapshot steps
 - ✅ Workflow runs successfully with policy updates and snapshotting
 - ✅ Can see environment snapshots in the Kosli web interface
 - ✅ Can see compliance status (compliant/non-compliant) for running artifacts

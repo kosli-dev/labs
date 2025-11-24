@@ -62,34 +62,21 @@ See [Artifacts documentation](https://docs.kosli.com/getting_started/artifacts/)
 
 #### Attest the application artifact
 
-Your build process creates a JAR file in `app/build/libs/`. Let's attest it:
+Your build process creates a JAR file in `app/build/libs/`. Let's attest it by adding a step to the `Build` job in `.github/workflows/full-pipeline.yaml`.
 
-**Create `ci/attest-app.sh`:**
+Add this step after the "Build application" step:
 
-```bash
-#!/bin/bash
-set -e
-
-echo "Attesting application artifact..."
-
-# Find the JAR file
-JAR_FILE=$(ls app/build/libs/app-*-all.jar)
-
-kosli attest artifact ${JAR_FILE} \
-  --artifact-type file \
-  --flow ${APP_NAME}-pipeline \
-  --trail ${GIT_COMMIT} \
-  --name application \
-  --build-url ${BUILD_URL} \
-  --commit-url ${COMMIT_URL}
-
-echo "Application artifact attested successfully"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/attest-app.sh
+```yaml
+      - name: Attest application artifact
+        run: |
+          JAR_FILE=$(ls app/build/libs/app-*-all.jar)
+          kosli attest artifact ${JAR_FILE} \
+            --artifact-type file \
+            --flow ${APP_NAME}-pipeline \
+            --trail ${GIT_COMMIT} \
+            --name application \
+            --build-url ${BUILD_URL} \
+            --commit-url ${COMMIT_URL}
 ```
 
 The `--name application` parameter gives this artifact a logical name in your Flow. This name will be used to attach other attestations (like tests) to this specific artifact.
@@ -98,32 +85,18 @@ See [kosli attest artifact](https://docs.kosli.com/client_reference/kosli_attest
 
 #### Attest JUnit test results
 
-Your pipeline runs tests that produce JUnit XML results. Let's attest them:
+Your pipeline runs tests that produce JUnit XML results. Let's attest them by adding a step to the `Build` job in `.github/workflows/full-pipeline.yaml`.
 
-**Create `ci/attest-junit.sh`:**
+Add this step after the "Test" step:
 
-```bash
-#!/bin/bash
-set -e
-
-echo "Attesting JUnit test results..."
-
-# Find the JUnit test results
-JUNIT_RESULTS="app/build/test-results/test/*.xml"
-
-kosli attest junit \
-  --flow ${APP_NAME}-pipeline \
-  --trail ${GIT_COMMIT} \
-  --name application.unit-tests \
-  --results-dir app/build/test-results/test/
-
-echo "JUnit test results attested successfully"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/attest-junit.sh
+```yaml
+      - name: Attest JUnit test results
+        run: |
+          kosli attest junit \
+            --flow ${APP_NAME}-pipeline \
+            --trail ${GIT_COMMIT} \
+            --name application.unit-tests \
+            --results-dir app/build/test-results/test/
 ```
 
 The `--name application.unit-tests` links this attestation to the `application` artifact we attested earlier. Kosli automatically analyzes the JUnit XML to determine if tests passed or failed.
@@ -134,33 +107,21 @@ See [kosli attest junit](https://docs.kosli.com/client_reference/kosli_attest_ju
 
 #### Attest the Docker image
 
-After building the Docker image, attest it to Kosli:
+After building the Docker image, attest it to Kosli by adding a step to the `Docker-image` job in `.github/workflows/full-pipeline.yaml`.
 
-**Create `ci/attest-docker.sh`:**
+Add this step after the "push docker" step:
 
-```bash
-#!/bin/bash
-set -e
-
-echo "Attesting Docker image..."
-
-IMAGE_NAME="ghcr.io/${IMAGE}:latest"
-
-kosli attest artifact ${IMAGE_NAME} \
-  --artifact-type oci \
-  --flow ${APP_NAME}-pipeline \
-  --trail ${GIT_COMMIT} \
-  --name docker-image \
-  --build-url ${BUILD_URL} \
-  --commit-url ${COMMIT_URL}
-
-echo "Docker image attested successfully"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/attest-docker.sh
+```yaml
+    - name: Attest Docker image
+      run: |
+        IMAGE_NAME="ghcr.io/${IMAGE}:latest"
+        kosli attest artifact ${IMAGE_NAME} \
+          --artifact-type oci \
+          --flow ${APP_NAME}-pipeline \
+          --trail ${GIT_COMMIT} \
+          --name docker-image \
+          --build-url ${BUILD_URL} \
+          --commit-url ${COMMIT_URL}
 ```
 
 Using `--artifact-type oci` tells Kosli to fetch the image manifest directly from the container registry without needing Docker locally. This is more reliable in CI environments.
@@ -169,32 +130,20 @@ Using `--artifact-type oci` tells Kosli to fetch the image manifest directly fro
 
 #### Generate and attest SBOM
 
-Your workflow already generates an SBOM using Anchore. Let's attest it:
+Your workflow already generates an SBOM using Anchore. Let's attest it by adding a step to the `Docker-image` job in `.github/workflows/full-pipeline.yaml`.
 
-**Create `ci/attest-sbom.sh`:**
+Add this step after the "Generate SBOM for the docker image" step:
 
-```bash
-#!/bin/bash
-set -e
-
-echo "Attesting SBOM..."
-
-IMAGE_NAME="ghcr.io/${IMAGE}:latest"
-
-kosli attest sbom \
-  --flow ${APP_NAME}-pipeline \
-  --trail ${GIT_COMMIT} \
-  --name docker-image.sbom \
-  --artifact-type oci ${IMAGE_NAME} \
-  --sbom sbom.spdx.json
-
-echo "SBOM attested successfully"
-```
-
-Make it executable:
-
-```bash
-chmod +x ci/attest-sbom.sh
+```yaml
+    - name: Attest SBOM
+      run: |
+        IMAGE_NAME="ghcr.io/${IMAGE}:latest"
+        kosli attest sbom \
+          --flow ${APP_NAME}-pipeline \
+          --trail ${GIT_COMMIT} \
+          --name docker-image.sbom \
+          --artifact-type oci ${IMAGE_NAME} \
+          --sbom sbom.spdx.json
 ```
 
 The SBOM attestation is linked to the `docker-image` artifact. Kosli stores the SBOM in its Evidence Vault for future reference.
@@ -205,45 +154,15 @@ See [kosli attest sbom](https://docs.kosli.com/client_reference/kosli_attest_sbo
 
 #### Verify the workflow integration
 
-Your `.github/workflows/full-pipeline.yaml` already references these scripts. The steps should be:
-
-```yaml
-- name: Kosli attest application
-  run: ci/attest-app.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-
-- name: attest junit tests
-  run: ci/attest-junit.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-```
-
-And in the Docker-image job:
-
-```yaml
-- name: Attest docker image
-  run: bash ci/attest-docker.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-
-- name: Attest SBOM
-  run: bash ci/attest-sbom.sh
-  env:
-    KOSLI_API_TOKEN: ${{ secrets.KOSLI_API_TOKEN }}
-    KOSLI_ORG: ${{ secrets.KOSLI_ORG }}
-```
+Ensure your `.github/workflows/full-pipeline.yaml` now includes the new Kosli steps in the `Build` and `Docker-image` jobs.
 
 #### Test the attestations
 
-1. Commit the attestation scripts:
+1. Commit the changes to your workflow file:
 
 ```bash
-git add ci/attest-app.sh ci/attest-junit.sh ci/attest-docker.sh ci/attest-sbom.sh
-git commit -m "Add Kosli attestation scripts"
+git add .github/workflows/full-pipeline.yaml
+git commit -m "Add Kosli attestation steps"
 git push origin main
 ```
 
@@ -290,8 +209,7 @@ kosli attest generic \
 
 Before moving to the next lab, ensure you have:
 
-- ✅ Created attestation scripts: `attest-app.sh`, `attest-junit.sh`, `attest-docker.sh`, `attest-sbom.sh`
-- ✅ All scripts are executable and integrated into the workflow
+- ✅ Updated workflow with attestation steps
 - ✅ Workflow runs successfully with all attestation steps passing
 - ✅ Can see artifacts in the Kosli Trail view with their fingerprints
 - ✅ Can see JUnit test results attached to the application artifact
