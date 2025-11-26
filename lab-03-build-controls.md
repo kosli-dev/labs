@@ -3,24 +3,38 @@
 ## Learning Goals
 
 - Understand what attestations are and why they matter for compliance
-- Attest artifacts (binaries and Docker images) to Kosli
+- Attest artifacts to Kosli
 - Attach test results (JUnit) as attestations
 - Attach Software Bill of Materials (SBOM) as attestations
-- Understand how attestations provide evidence in your software supply chain
 - Integrate attestation commands into your CI/CD pipeline
 
 ## Introduction
 
-**Attestations** are how you record facts about your software supply chain in Kosli. They are immutable pieces of evidence that prove certain activities occurred - like tests passing, security scans completing, or artifacts being built.
+**Attestations** are how you record facts about your software supply chain in Kosli.
 
-In Kosli, you can attest:
-- **Artifacts**: The binaries or container images you build (establishing provenance)
-- **Test results**: JUnit tests, coverage reports, etc.
-- **Security scans**: SBOM, vulnerability scans (Snyk, Trivy, etc.)
-- **Pull requests**: Verification that code was reviewed
-- **Custom evidence**: Any other facts you want to record
+They are immutable pieces of evidence that prove certain activities occurred - like tests passing, security scans completing, or artifacts being built.
+
+Kosli has different attestation types:
+A couple of examples are:
+
+- Commons like: `artifact`,`generic`
+- Tool specific: `junit`,`snyk`
+- Custom: Types that you define yourself.
 
 Each attestation is linked to a Trail and optionally to a specific artifact. This creates an auditable chain of evidence showing what happened during your software delivery process.
+
+### Understanding artifact fingerprints
+
+Kosli identifies artifacts by their SHA256 fingerprint (hash). This fingerprint uniquely identifies the artifact regardless of where it's stored or what it's named. The Kosli CLI can automatically calculate fingerprints for:
+
+- **Files**: JAR files, binaries, etc. (`--artifact-type file`)
+- **Directories**: Source code, build outputs (`--artifact-type dir`)
+- **Docker images**: From local Docker daemon (`--artifact-type docker`)
+- **OCI images**: From container registries (`--artifact-type oci`)
+
+> :bulb: Using fingerprints ensures you're tracking the exact artifact, not just its name or tag.
+
+See [Artifacts documentation](https://docs.kosli.com/getting_started/artifacts/) for more details.
 
 ## Prerequisites
 
@@ -43,22 +57,6 @@ In this lab, you will:
 - View all attestations in the Kosli web interface
 
 ### Step-by-step instructions
-
-<details>
-<summary>More Details</summary>
-
-#### Understanding artifact fingerprints
-
-Kosli identifies artifacts by their SHA256 fingerprint (hash). This fingerprint uniquely identifies the artifact regardless of where it's stored or what it's named. The Kosli CLI can automatically calculate fingerprints for:
-
-- **Files**: JAR files, binaries, etc. (`--artifact-type file`)
-- **Directories**: Source code, build outputs (`--artifact-type dir`)
-- **Docker images**: From local Docker daemon (`--artifact-type docker`)
-- **OCI images**: From container registries (`--artifact-type oci`)
-
-> :bulb: Using fingerprints ensures you're tracking the exact artifact, not just its name or tag.
-
-See [Artifacts documentation](https://docs.kosli.com/getting_started/artifacts/) for more details.
 
 #### Attest the application artifact
 
@@ -202,8 +200,6 @@ kosli attest generic \
 ```
 
 > :bulb: Generic attestations allow you to record any fact. In production, you'd parse the Trivy results and set `--compliant` based on severity thresholds.
-
-</details>
 
 ### Verification Checklist
 
