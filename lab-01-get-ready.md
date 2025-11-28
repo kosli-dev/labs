@@ -111,7 +111,7 @@ So far so good :tada:. We will go a lot more in detail with Kosli in the next se
 #### View the Docker image
 
 1. Go to your GitHub profile page
-2. Click on "Packages" tab
+2. Click on "Packages" in the left sidebar
 3. You should see the `labs` package
 4. Click on it to view details about the Docker image
 5. Note the image tag (usually `latest`) and the SHA digest
@@ -123,7 +123,7 @@ So far so good :tada:. We will go a lot more in detail with Kosli in the next se
 Before moving to the next lab, ensure you have:
 
 - ✅ A Kosli account at app.kosli.com with an organization created
-- ✅ A forked copy of the labs repository under your GitHub account
+- ✅ A copy of the labs repository under your GitHub account
 - ✅ GitHub Actions successfully completed all jobs in the workflow
 - ✅ A Docker image published to your GitHub Container Registry
 - ✅ Understanding of the basic pipeline structure
