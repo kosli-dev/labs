@@ -3,7 +3,7 @@
 ## Learning Goals
 
 - Create a Kosli account
-- Fork and set up the sample application repository
+- Set up this repository on your GitHub account
 - Verify that the CI/CD pipeline runs successfully
 - Understand the basic structure of the application and its deployment process
 
