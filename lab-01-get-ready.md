@@ -52,7 +52,10 @@ So far so good :tada:. We will go a lot more in detail with Kosli in the next se
 
 - Navigate to the labs repositorys main page (the repository you're currently viewing)
 - Click the "Use this template" button in the top-right corner of the page
-- Select your personal GitHub account as the destination
+- Select "Create a new repository"
+- Select your personal GitHub account as the "Owner" and name the repository `labs`
+- Optionally, add a description and choose to make the repository public or private
+- Click "Create repository from template"
 - Wait for GitHub to complete the copy process
 - You should now have a copy at `https://github.com/YOUR-GITHUB-USERNAME/labs`
 
