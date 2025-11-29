@@ -42,23 +42,24 @@ In this lab, you will:
 
 #### 1. Define Compliance Requirements
 
-We need to tell Kosli what a "good" release looks like. We do this by defining a template YAML file.
+We can tell Kosli what attestations a "good" release looks like.
+
+We do this by defining a template YAML file.
 
 Create a file named `flow-template.yaml` in the root of your repository:
 
 ```yaml
-description: "CI/CD pipeline for labs application"
-visibility: private
-template:
+version: 1
+trail:
   artifacts:
     - name: application
       attestations:
         - name: unit-tests
-          required: true
+          type: junit
     - name: docker-image
       attestations:
         - name: sbom
-          required: true
+          type: generic
 ```
 
 This template matches the structure of the attestations we set up in Lab 3:
@@ -73,10 +74,11 @@ Now, let's update your existing Flow to use this template. We'll add a step to y
 Open `.github/workflows/full-pipeline.yaml` and find the `Create/Update Flow` step (added in Lab 2). Update it to use the template file:
 
 ```yaml
-    - name: Create/Update Flow
-      run: |
-        kosli create flow ${APP_NAME}-pipeline \
-          --template-file flow-template.yaml
+      - name: Create/Update Flow
+        run: |
+          kosli create flow ${APP_NAME}-pipeline \
+            --description "CI/CD pipeline for ${APP_NAME} application" \
+            --template-file flow-template.yaml
 ```
 
 > :bulb: We removed `--use-empty-template` and replaced it with `--template-file flow-template.yaml`.
@@ -88,19 +90,25 @@ Now that we have rules, let's enforce them! We will add a step before deployment
 In `.github/workflows/full-pipeline.yaml`, find the `Deploy` job. Add the assertion step **before** the "Deploy to production" step:
 
 ```yaml
+    - name: Setup Kosli CLI
+      uses: kosli-dev/setup-cli-action@v2
+      with:
+        version:
+          2.11.32
     - name: Assert Compliance
       run: |
         IMAGE_NAME="ghcr.io/${IMAGE}:latest"
         kosli assert artifact ${IMAGE_NAME} \
           --artifact-type oci \
-          --flow ${APP_NAME}-pipeline \
-          --trail ${GIT_COMMIT}
+          --flow ${APP_NAME}-pipeline
 ```
 
-This command asks Kosli: *"Is this artifact (and its trail) compliant with the Flow Template?"*
+This command asks Kosli: *"Is this artifact (and its trail) compliant?"*
 
-- If **Yes**: The command exits with 0, and the pipeline continues to deploy.
-- If **No**: The command exits with 1, failing the pipeline and preventing deployment.
+- **Yes**: means that all attestations and artifacts in the template is pressent **and** none of the attestations made to the trail are non-compliant.
+  - The command exits with 0, and the pipeline continues to deploy.
+- **No**: means that either one or more attestations and artifacts in the template is not pressent **or** one of the attestations made to the trail are non-compliant.
+  - The command exits with 1, failing the pipeline and preventing deployment.
 
 See [kosli assert artifact](https://docs.kosli.com/client_reference/kosli_assert_artifact/) for more details.
 
@@ -140,7 +148,7 @@ To see the gate in action, you can simulate a failure.
       attestations:
         - name: sbom
           required: true
-        - name: security-scan  # We haven't implemented this yet!
+        - name: performance-test  # We haven't implemented this yet!
           required: true
 ```
 
