@@ -82,49 +82,37 @@ Visit [app.kosli.com](https://app.kosli.com), navigate to Environments, and you 
 
 See [kosli create environment](https://docs.kosli.com/client_reference/kosli_create_environment/) for more details.
 
-#### Snapshot the Docker environment manually
+#### Explore an existing Environment
 
-When you take a snapshot, Kosli records what's running. Let's do this manually first:
+Since we cannot assume everyone has Docker installed locally, let's look at a real-world example of an environment in Kosli.
 
-```bash
-# Ensure your application is running locally
-docker-compose up -d
+Navigate to the [Cyber-Dojo AWS Beta environment](https://app.kosli.com/cyber-dojo/environments/aws-beta/snapshots/).
 
-# Take a snapshot of running containers
-kosli snapshot docker labs-prod \
-  --docker-host unix:///var/run/docker.sock
+Here you can see a history of snapshots taken from an AWS environment. Each snapshot shows exactly what was running at that point in time.
 
-# View the snapshot
-kosli get snapshot labs-prod --output json
-```
+In the Kosli web interface you can see
 
-> :bulb: The `--docker-host` flag tells Kosli where to find Docker. On Linux/macOS, it's typically `unix:///var/run/docker.sock`. On Windows, it might be `npipe:////./pipe/docker_engine` or you may need Docker Desktop configured for TCP access.
-
-The snapshot captures:
-- All running containers
-- Their image fingerprints
-- When they were detected
-- Whether Kosli knows about these artifacts (from your attestations)
-
-> :bulb: If Kosli finds containers running images that were never attested, they'll be marked as "unknown" or "non-compliant" depending on your policies.
-
-See [kosli snapshot docker](https://docs.kosli.com/client_reference/kosli_snapshot_docker/) for more details.
-
-#### Understanding Environment Snapshots
-
-In the Kosli web interface:
-
-1. Navigate to Environments → labs-prod
-2. Click on the latest snapshot
-3. You should see:
-   - **Running artifacts**: The Docker image(s) currently running
-   - **Compliance status**: Whether they meet policy requirements (if any)
-   - **Changes**: What started or stopped since the last snapshot
-   - **Timeline**: When this snapshot was taken
+  - **Running artifacts**: The container image(s) currently running.
+  - **Compliance status**: Whether they meet policy requirements (if any)
+  - **Events**: What started or stopped since the last snapshot
+  - **Duration**: When this application started running on the environment.
 
 Each snapshot is immutable. If you take another snapshot and nothing changed, Kosli won't create a new one. New snapshots are only created when there are actual changes.
 
-> :bulb: Regular snapshotting creates a complete audit trail of your production environment, showing exactly what was running at any point in time.
+> :bulb: Regular snapshotting creates a complete audit trail of your production environment, showing exactly what was running at any point in time. If nothing has changed, Kosli will not persist that snapshot.
+
+#### Snapshot the environment in CI
+
+Let's integrate automated snapshotting into your workflow by adding a step to the `Deploy` job in `.github/workflows/full-pipeline.yaml`.
+
+Add this step after the "Deploy to production" step:
+
+```yaml
+    - name: Kosli snapshot environment
+      run: kosli snapshot docker labs-prod 
+```
+
+> :bulb: In your workflow, this runs after the application is deployed. It captures what's running immediately after deployment.
 
 #### Create a compliance Policy
 
@@ -143,7 +131,7 @@ artifacts:
     - name: unit-tests  # Must have unit test attestation
       type: junit
     - name: sbom  # Must have SBOM attestation
-      type: "*"  # Any SBOM attestation type
+      type: "*"  # Any attestation type
 ```
 
 This policy requires:
@@ -154,29 +142,26 @@ This policy requires:
 Create the policy in Kosli:
 
 ```bash
-kosli create policy kosli-prod-requirements \
-  --policy-file .kosli-policy.yml \
-  --description "Production compliance requirements"
+kosli create policy labs-prod-requirements .kosli-policy.yml
 
 # View the policy
-kosli get policy kosli-prod-requirements
+kosli get policy labs-prod-requirements
 ```
 
 See [kosli create policy](https://docs.kosli.com/client_reference/kosli_create_policy/) and [Policy documentation](https://docs.kosli.com/getting_started/policies/) for more details.
 
 #### Attach the Policy to your Environment
 
-Now attach the policy to enforce it:
+Now attach the policy to to the environment to activate it:
 
 ```bash
-kosli attach policy kosli-prod-requirements \
-  --environment labs-prod
+kosli attach-policy labs-prod-requirements --environment labs-prod
 
 # Verify attachment
 kosli get environment labs-prod
 ```
 
-Attaching the policy automatically triggers a new snapshot evaluation. Kosli will check if currently running artifacts meet the policy requirements.
+Attaching the policy automatically triggers a new snapshot evaluation.  Kosli will check if currently running artifacts meet the policy requirements.
 
 See [kosli attach policy](https://docs.kosli.com/client_reference/kosli_attach_policy/) for more details.
 
@@ -189,48 +174,30 @@ Return to the Kosli web interface:
 3. Check the compliance status:
    - **Compliant**: Green - all requirements met
    - **Non-compliant**: Red - some requirements not met
-   - **Unknown**: Gray - no policies attached or unable to determine
-4. Click on artifacts to see which attestations are present/missing
+4. Click on artifacts to see which attestations are present
 
-If your artifact is non-compliant, it might be because:
+<details>
+<summary>:bulb: If your artifact is non-compliant, it might be because:</summary>
+
 - The attestation names in your scripts don't match the policy
 - Some attestations are missing
 - The artifact wasn't properly attested in the first place
 
-> :bulb: Policies are evaluated against snapshots, not during builds. This allows you to deploy first and evaluate compliance retrospectively, or enforce it with admission controllers.
+</details>
 
-#### Snapshot the environment in CI
-
-Let's integrate automated snapshotting into your workflow by adding a step to the `Deploy` job in `.github/workflows/full-pipeline.yaml`.
-
-Add this step after the "Deploy to production" step:
-
-```yaml
-    - name: Kosli snapshot environment
-      run: |
-        kosli snapshot docker labs-prod \
-          --docker-host unix:///var/run/docker.sock
-```
-
-> :bulb: In your workflow, this runs after the application is deployed. It captures what's running immediately after deployment.
+> :bulb: Policies towards environments are evaluated on every snapshot. If you want to have it as a gate-keeper before a deployment, use the `kosli assert` command, discussed further in `Policy enforcement gate` section.
 
 #### Manage policy in CI
 
 Let's automate policy updates by adding a step to your workflow. You can add this to the `Deploy` job, before the deployment happens.
 
-Add this step before the "Deploy to production" step:
+Add this step before the "Assert Compliance" step:
 
 ```yaml
     - name: Update Kosli policy
-      run: |
-        if [ -f ".kosli-policy.yml" ]; then
-          kosli create policy kosli-prod-requirements \
-            --policy-file .kosli-policy.yml \
-            --description "Production compliance requirements for ${APP_NAME}"
-          
-          kosli attach policy kosli-prod-requirements \
-            --environment labs-prod || true
-        fi
+      run: kosli create policy labs-prod-requirements .kosli-policy.yml
+    - name: Attach policy to environment
+      run: kosli attach policy labs-prod-requirements --environment labs-prod
 ```
 
 #### Verify workflow integration
@@ -239,24 +206,9 @@ Ensure your `.github/workflows/full-pipeline.yaml` now includes the policy updat
 
 #### Test the complete integration
 
-1. Create the policy file and commit the changes:
+1. Commit the changes:
 
 ```bash
-# Create the policy file
-cat > .kosli-policy.yml << 'EOF'
-_schema: https://kosli.com/schemas/policy/environment/v1
-
-artifacts:
-  provenance:
-    required: true
-  
-  attestations:
-    - name: unit-tests
-      type: junit
-    - name: sbom
-      type: "*"
-EOF
-
 # Commit policy and workflow
 git add .kosli-policy.yml .github/workflows/full-pipeline.yaml
 git commit -m "Add Kosli environment and policy management"
@@ -314,13 +266,12 @@ artifacts:
 
 See [Policy expressions](https://docs.kosli.com/getting_started/policies/#policy-expressions) for more details.
 
-
 ### Verification Checklist
 
 Before completing this lab, ensure you have:
 
 - ✅ Created a `labs-prod` environment of type `docker`
-- ✅ Successfully taken a manual snapshot of running containers
+- ✅ Explored the Cyber-Dojo environment in Kosli
 - ✅ Created a `.kosli-policy.yml` file with compliance requirements
 - ✅ Created the policy in Kosli and attached it to your environment
 - ✅ Updated workflow with policy update and snapshot steps
