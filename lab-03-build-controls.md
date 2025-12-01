@@ -40,7 +40,7 @@ See [Artifacts documentation](https://docs.kosli.com/getting_started/artifacts/)
 
 - Completed [Lab 2: Flows and Trails](lab-02-flows-and-trails.md)
 - Kosli CLI installed and configured
-- Your forked labs repository with Flow and Trail creation working
+- Your copy of the labs repository with Flow and Trail creation working
 - Understanding of your application's build process
 
 ## Exercise

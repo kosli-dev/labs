@@ -21,8 +21,9 @@ Each lab builds on the previous one, taking you from initial setup through runti
 Set up your Kosli account and verify the sample application pipeline.
 
 **You'll learn:**
+
 - Creating a Kosli account and organization
-- Forking the sample repository
+- Creating a copy of the sample repository
 - Understanding the existing CI/CD pipeline
 
 ### [Lab 2: Flows and Trails](lab-02-flows-and-trails.md)
@@ -30,6 +31,7 @@ Set up your Kosli account and verify the sample application pipeline.
 Install the Kosli CLI and start tracking your delivery process.
 
 **You'll learn:**
+
 - Installing and configuring the Kosli CLI
 - Creating Flows to represent your CI/CD pipeline
 - Beginning Trails to track individual executions
@@ -40,6 +42,7 @@ Install the Kosli CLI and start tracking your delivery process.
 Record evidence about your artifacts and build process.
 
 **You'll learn:**
+
 - Attesting artifacts (binaries and Docker images)
 - Attaching JUnit test results
 - Generating and attesting Software Bill of Materials (SBOM)

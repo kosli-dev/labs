@@ -3,7 +3,7 @@
 ## Learning Goals
 
 - Create a Kosli account
-- Fork and set up the sample application repository
+- Create a copy of the sample application repository
 - Verify that the CI/CD pipeline runs successfully
 - Understand the basic structure of the application and its deployment process
 
@@ -31,8 +31,8 @@ In subsequent labs, you'll integrate Kosli to track all these activities.
 In this lab, you will:
 
 - Create a free Kosli account
-- Fork the labs repository to your GitHub account
-- Enable GitHub Actions on your forked repository
+- Create a copy of the labs repository to your GitHub account
+- Enable GitHub Actions on your copied repository
 - Verify that the pipeline runs successfully and produces artifacts
 - Observe the application deployment process
 
@@ -120,7 +120,7 @@ So far so good :tada:. We will go a lot more in detail with Kosli in the next se
 Before moving to the next lab, ensure you have:
 
 - ✅ A Kosli account at app.kosli.com with an organization created
-- ✅ A forked copy of the labs repository under your GitHub account
+- ✅ A copy of the labs repository under your GitHub account
 - ✅ GitHub Actions successfully completed all jobs in the workflow
 - ✅ A Docker image published to your GitHub Container Registry
 - ✅ Understanding of the basic pipeline structure

@@ -24,7 +24,7 @@ Think of a Flow as a template for your process, and Trails as the individual ins
 
 - Completed [Lab 1: Get Ready](lab-01-get-ready.md)
 - A Kosli account
-- Your forked labs repository
+- Your copy of the labs repository
 - Command line access (local terminal or GitHub Codespace)
 
 ## Exercise
@@ -175,7 +175,7 @@ Now let's integrate Flow and Trail creation into your CI/CD pipeline.
 
 **Add API key as a GitHub Secret:**
 
-1. Go to your forked repository on GitHub
+1. Go to your copy of the labs repository on GitHub
 2. Navigate to Settings → Secrets and variables → Actions
 3. Click "New repository secret"
 4. Name: `KOSLI_API_TOKEN`
