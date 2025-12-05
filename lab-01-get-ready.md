@@ -13,7 +13,7 @@ Welcome to the first lab!
 
 Before diving into Kosli's features, you need to set up your account and verify that your sample application builds and deploys correctly.
 
-This lab uses a simple [Java Micronaut application](app) with a complete CI/CD pipeline already configured in GitHub Actions. The pipeline builds the application, creates a Docker image, runs tests, and deploys it.
+This lab uses a simple [Java application](app) with a complete CI/CD pipeline already configured in GitHub Actions. The pipeline builds the application, creates a Docker image, runs tests, and deploys it.
 
 In subsequent labs, you'll integrate Kosli to track all these activities.
 
