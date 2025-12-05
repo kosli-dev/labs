@@ -1,16 +1,26 @@
 package example.micronaut;
 
-import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Produces;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
 
-@Controller("/hello")
-public class HelloController{
-    @Get("/{name}") 
-    @Produces(MediaType.TEXT_PLAIN) 
-    public String index(String name) {
-        return combineName(name); 
+public class HelloController implements HttpHandler {
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        // Expected /hello/{name}
+        String name = "";
+        if (path.startsWith("/hello/")) {
+            name = path.substring("/hello/".length());
+        }
+        
+        String response = combineName(name);
+        exchange.getResponseHeaders().set("Content-Type", "text/plain");
+        exchange.sendResponseHeaders(200, response.length());
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
     }
     
     //Example of a function that can be tested through normal unit frameworks

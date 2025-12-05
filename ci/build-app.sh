@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e
-gradle clean shadowjar -p app
+gradle clean jar -p app

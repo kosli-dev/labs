@@ -1,56 +1,77 @@
 package example.micronaut;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.client.RxHttpClient;
-import io.micronaut.http.client.annotation.Client;
-import io.micronaut.test.annotation.MicronautTest;
+import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
-@MicronautTest 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class HelloControllerTest {
 
-    @Inject
-    @Client("/")
-    RxHttpClient client; 
-    //Test spins up an entire server and client to perform the test
-    
-    @Test
-    public void testHello() {
-        HttpRequest<String> request = HttpRequest.GET("/hello/sofus"); 
-        String body = client.toBlocking().retrieve(request);
+    private static HttpServer server;
+    private static HttpClient client;
+    private static final int PORT = 8081;
 
-        assertNotNull(body);
-        assertEquals("Hello sofus", body);
+    @BeforeAll
+    public static void setUp() throws IOException {
+        server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        server.createContext("/", new RootController());
+        server.createContext("/hello", new HelloController());
+        server.createContext("/status", new ReadyController());
+        server.setExecutor(null);
+        server.start();
+        
+        client = HttpClient.newHttpClient();
     }
+
+    @AfterAll
+    public static void tearDown() {
+        server.stop(0);
+    }
+
+    @Test
+    public void testHello() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/hello/sofus"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        assertEquals(200, response.statusCode());
+        assertEquals("Hello sofus", response.body());
+    }
+
     @Test
     public void testCombineName() {
         String name = "Sonny";
         HelloController sut = new HelloController();
-        System.out.println("testing");
         assertEquals("Hello "+name, sut.combineName(name),"Name and greeting not properly combined");
-        
-        
     }
 
     @Test
-    public void testIndexWithDifferentNames() {
-        HttpRequest<String> request1 = HttpRequest.GET("/hello/Alice");
-        String response1 = client.toBlocking().retrieve(request1);
-        assertEquals("Hello Alice", response1);
+    public void testIndexWithDifferentNames() throws IOException, InterruptedException {
+        HttpRequest request1 = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/hello/Alice"))
+                .GET()
+                .build();
+        HttpResponse<String> response1 = client.send(request1, HttpResponse.BodyHandlers.ofString());
+        assertEquals("Hello Alice", response1.body());
 
-        HttpRequest<String> request2 = HttpRequest.GET("/hello/Bob");
-        String response2 = client.toBlocking().retrieve(request2);
-        assertEquals("Hello Bob", response2);
-
-        HttpRequest<String> request3 = HttpRequest.GET("/hello/");
-        // This will likely result in a 404 or error, depending on routing config
-        // Uncomment below if you want to check for error handling
-        // assertThrows(HttpClientResponseException.class, () -> client.toBlocking().retrieve(request3));
+        HttpRequest request2 = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/hello/Bob"))
+                .GET()
+                .build();
+        HttpResponse<String> response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
+        assertEquals("Hello Bob", response2.body());
     }
 
     @Test
@@ -66,7 +87,4 @@ public class HelloControllerTest {
         String result = sut.combineName("");
         assertEquals("Hello ", result);
     }
-
-
-
 }
