@@ -129,7 +129,7 @@ The Trail name is the git commit SHA, which uniquely identifies this execution. 
 
 - Go to Kosli to see your new trail under your Flow called "labs-pipeline"
 
-![first trail](img\first-trail.png)
+![first trail](img/first-trail.png)
 
 See [kosli begin trail](https://docs.kosli.com/client_reference/kosli_begin_trail/) for more details and [Flows documentation](https://docs.kosli.com/getting_started/flows/) and [Trails documentation](https://docs.kosli.com/getting_started/trails/) for conceptual understanding.
 
