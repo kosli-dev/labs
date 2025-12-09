@@ -40,7 +40,7 @@ In this lab, you will:
 
 #### Create a Kosli account
 
-- Navigate to [kosli.com/sign-up]<https://app.kosli.com/sign-up>)
+- Navigate to [kosli.com/sign-up](https://app.kosli.com/sign-up)
 - Choose to sign up with GitHub
 - Complete the registration process
 - Verify your email address if required
