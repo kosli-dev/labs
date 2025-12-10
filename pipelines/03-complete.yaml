@@ -117,7 +117,9 @@ jobs:
           --trail ${GIT_COMMIT} \
           --name docker-image \
           --build-url ${BUILD_URL} \
-          --commit-url ${COMMIT_URL}
+          --commit-url ${COMMIT_URL} \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 
     - name: Generate SBOM for the docker image
       uses: anchore/sbom-action@v0
@@ -126,11 +128,6 @@ jobs:
         format: 'spdx-json'
         output-file: 'sbom.spdx.json'
         upload-artifact: false
-    - name: Setup Kosli CLI
-      uses: kosli-dev/setup-cli-action@v2
-      with:
-        version:
-          2.11.32
     - name: Attest SBOM
       run: |
         IMAGE_NAME="ghcr.io/${IMAGE}:latest"
@@ -139,7 +136,9 @@ jobs:
           --trail ${GIT_COMMIT} \
           --name docker-image.sbom \
           --artifact-type oci ${IMAGE_NAME} \
-          --attachments sbom.spdx.json
+          --attachments sbom.spdx.json \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 
   Security-scan:
     runs-on: ubuntu-latest

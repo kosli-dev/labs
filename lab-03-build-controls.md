@@ -124,7 +124,9 @@ Add these steps after the "push docker" step:
           --trail ${GIT_COMMIT} \
           --name docker-image \
           --build-url ${BUILD_URL} \
-          --commit-url ${COMMIT_URL}
+          --commit-url ${COMMIT_URL} \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Using `--artifact-type oci` tells Kosli to fetch the image manifest directly from the container registry without needing Docker locally. This is more reliable in CI environments.
@@ -138,11 +140,6 @@ Your workflow already generates an SBOM using Anchore. Let's attest it by adding
 Add these steps after the "Generate SBOM for the docker image" step:
 
 ```yaml
-   - name: Setup Kosli CLI
-     uses: kosli-dev/setup-cli-action@v2
-     with:
-       version:
-         2.11.32
     - name: Attest SBOM
       run: |
         IMAGE_NAME="ghcr.io/${IMAGE}:latest"
@@ -151,7 +148,9 @@ Add these steps after the "Generate SBOM for the docker image" step:
           --trail ${GIT_COMMIT} \
           --name docker-image.sbom \
           --artifact-type oci ${IMAGE_NAME} \
-          --attachments sbom.spdx.json
+          --attachments sbom.spdx.json \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 
 ```
 

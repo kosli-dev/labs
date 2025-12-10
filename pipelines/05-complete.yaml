@@ -117,7 +117,28 @@ jobs:
           --trail ${GIT_COMMIT} \
           --name docker-image \
           --build-url ${BUILD_URL} \
-          --commit-url ${COMMIT_URL}
+          --commit-url ${COMMIT_URL} \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Generate SBOM for the docker image
+      uses: anchore/sbom-action@v0
+      with:
+        image: ghcr.io/${{ env.IMAGE }}:latest
+        format: 'spdx-json'
+        output-file: 'sbom.spdx.json'
+        upload-artifact: false
+    - name: Attest SBOM
+      run: |
+        IMAGE_NAME="ghcr.io/${IMAGE}:latest"
+        kosli attest generic \
+          --flow ${APP_NAME}-pipeline \
+          --trail ${GIT_COMMIT} \
+          --name docker-image.sbom \
+          --artifact-type oci ${IMAGE_NAME} \
+          --attachments sbom.spdx.json \
+          --registry-username  ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 
     - name: Generate SBOM for the docker image
       uses: anchore/sbom-action@v0
