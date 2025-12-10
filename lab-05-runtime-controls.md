@@ -197,7 +197,7 @@ Add this step before the "Assert Compliance" step:
     - name: Update Kosli policy
       run: kosli create policy labs-prod-requirements .kosli-policy.yml
     - name: Attach policy to environment
-      run: kosli attach policy labs-prod-requirements --environment labs-prod
+      run: kosli attach-policy labs-prod-requirements --environment labs-prod
 ```
 
 #### Verify workflow integration
