@@ -48,6 +48,17 @@ Record evidence about your artifacts and build process.
 - Generating and attesting Software Bill of Materials (SBOM)
 - Understanding the attestation audit trail
 
+### [Lab 4:  Release Controls and Compliance](lab-04-release-controls.md)
+
+Record evidence about your release process and enforce deployment gates.
+
+**You'll learn:**
+
+- How to use Flow Templates and how they define compliance requirements
+- How to update an existing Flow to enforce specific attestations
+- The difference between compliant and non-compliant Trails
+- How to kosli assert artifact to gate deployments based on compliance status
+
 ### [Lab 5: Runtime Controls](lab-05-runtime-controls.md)
 
 Track what's running in production and enforce compliance policies.
