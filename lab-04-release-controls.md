@@ -147,9 +147,9 @@ To see the gate in action, you can simulate a failure.
     - name: docker-image
       attestations:
         - name: sbom
-          required: true
+          type: generic
         - name: performance-test  # We haven't implemented this yet!
-          required: true
+          type: generic
 ```
 
 2. Commit and push.
