@@ -67,7 +67,7 @@ Add this step after the "Build application" step:
 ```yaml
       - name: Attest application artifact
         run: |
-          JAR_FILE=$(ls app/build/libs/app-*-all.jar)
+          JAR_FILE=$(ls app/build/libs/app-*.jar)
           kosli attest artifact ${JAR_FILE} \
             --artifact-type file \
             --flow ${APP_NAME}-pipeline \
