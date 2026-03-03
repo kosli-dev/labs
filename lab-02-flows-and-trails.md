@@ -69,8 +69,9 @@ kosli version
 ```bash
 # Set environment variables
 export KOSLI_API_TOKEN="your-api-key-here"
-export KOSLI_ORG="your-gh-username"
+export KOSLI_ORG="your-Kosli-username"
 ```
+> :bulb: Make sure your Kosli Organisation existing, otherwise you might see access errors running CLI commands
 
 </details>
 
