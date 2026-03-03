@@ -122,6 +122,7 @@ kosli begin trail $(git rev-parse HEAD) \
 kosli get trail $(git rev-parse HEAD) \
   --flow labs-pipeline
 ```
+> :warning: Make sure to run this in your copy of the labs repository!
 
 The Trail name is the git commit SHA, which uniquely identifies this execution. This allows Kosli to connect all activities (builds, tests, deployments) that happen for this specific commit.
 
