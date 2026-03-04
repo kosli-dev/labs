@@ -15,7 +15,7 @@
 They are immutable pieces of evidence that prove certain activities occurred - like tests passing, security scans completing, or artifacts being built.
 
 Kosli has different attestation types:
-A couple of examples are:
+A few examples:
 
 - Commons like: `artifact`,`generic`
 - Tool specific: `junit`,`snyk`
@@ -110,11 +110,11 @@ After building the Docker image, attest it to Kosli by adding steps to the `Dock
 Add these steps after the "push docker" step:
 
 ```yaml
-   - name: Setup Kosli CLI
-     uses: kosli-dev/setup-cli-action@v2
-     with:
-       version:
-         2.11.32
+    - name: Setup Kosli CLI
+      uses: kosli-dev/setup-cli-action@v2
+      with:
+        version:
+          2.11.32
     - name: Attest Docker image
       run: |
         IMAGE_NAME="ghcr.io/${IMAGE}:latest"
@@ -125,7 +125,7 @@ Add these steps after the "push docker" step:
           --name docker-image \
           --build-url ${BUILD_URL} \
           --commit-url ${COMMIT_URL} \
-          --registry-username  ${{ github.actor }} \
+          --registry-username ${{ github.actor }} \
           --registry-password ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -149,7 +149,7 @@ Add these steps after the "Generate SBOM for the docker image" step:
           --name docker-image.sbom \
           --artifact-type oci ${IMAGE_NAME} \
           --attachments sbom.spdx.json \
-          --registry-username  ${{ github.actor }} \
+          --registry-username ${{ github.actor }} \
           --registry-password ${{ secrets.GITHUB_TOKEN }}
 
 ```
@@ -202,12 +202,15 @@ Your workflow already runs Trivy security scans. While not creating an attestati
 
 ```bash
 # Example for future enhancement
+# Replace gh_user with your GitHub username
+export DOCKER_IMAGE="<gh_user>/labs"
+
 kosli attest generic \
-  --flow ${APP_NAME}-pipeline \
-  --trail ${GIT_COMMIT} \
+  --flow labs-pipeline \
+  --trail $(git rev-parse HEAD) \
   --name docker-image.security-scan \
-  --artifact-type oci ghcr.io/${IMAGE}:latest \
-  --compliant true \
+  --artifact-type oci ghcr.io/${DOCKER_IMAGE}:latest \
+  --compliant=true \
   --description "Trivy scan completed"
 ```
 
