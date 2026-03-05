@@ -100,7 +100,9 @@ In `.github/workflows/full-pipeline.yaml`, find the `Deploy` job. Add the assert
         IMAGE_NAME="ghcr.io/${IMAGE}:latest"
         kosli assert artifact ${IMAGE_NAME} \
           --artifact-type oci \
-          --flow ${APP_NAME}-pipeline
+          --flow ${APP_NAME}-pipeline \
+          --registry-username ${{ github.actor }} \
+          --registry-password ${{ secrets.GITHUB_TOKEN }}
 ```
 
 This command asks Kosli: *"Is this artifact (and its trail) compliant?"*
