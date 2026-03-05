@@ -161,9 +161,9 @@ kosli attach-policy labs-prod-requirements --environment labs-prod
 kosli get environment labs-prod
 ```
 
-Attaching the policy automatically triggers a new snapshot evaluation.  Kosli will check if currently running artifacts meet the policy requirements.
+> :bulb: When attaching the policy it automatically triggers a new snapshot evaluation. Kosli will check if currently running artifacts meet the policy requirements.
 
-See [kosli attach policy](https://docs.kosli.com/client_reference/kosli_attach_policy/) for more details.
+See [kosli attach policy](https://docs.kosli.com/client_reference/kosli_attach-policy/) for more details.
 
 #### View compliance status
 
