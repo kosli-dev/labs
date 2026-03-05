@@ -232,7 +232,7 @@ You can use policies as deployment gates to prevent non-compliant artifacts from
 # Check if an artifact is compliant before deployment
 kosli assert artifact ghcr.io/${IMAGE}:latest \
   --environment labs-prod \
-  --fingerprint $(kosli fingerprint docker ghcr.io/${IMAGE}:latest)
+  --fingerprint $(kosli fingerprint --artifact-type docker ghcr.io/${IMAGE}:latest)
 
 # Or assert against specific policies
 kosli assert artifact ghcr.io/${IMAGE}:latest \
