@@ -161,9 +161,9 @@ kosli attach-policy labs-prod-requirements --environment labs-prod
 kosli get environment labs-prod
 ```
 
-Attaching the policy automatically triggers a new snapshot evaluation.  Kosli will check if currently running artifacts meet the policy requirements.
+> :bulb: When attaching the policy it automatically triggers a new snapshot evaluation. Kosli will check if currently running artifacts meet the policy requirements.
 
-See [kosli attach policy](https://docs.kosli.com/client_reference/kosli_attach_policy/) for more details.
+See [kosli attach policy](https://docs.kosli.com/client_reference/kosli_attach-policy/) for more details.
 
 #### View compliance status
 
@@ -232,7 +232,7 @@ You can use policies as deployment gates to prevent non-compliant artifacts from
 # Check if an artifact is compliant before deployment
 kosli assert artifact ghcr.io/${IMAGE}:latest \
   --environment labs-prod \
-  --fingerprint $(kosli fingerprint docker ghcr.io/${IMAGE}:latest)
+  --fingerprint $(kosli fingerprint --artifact-type docker ghcr.io/${IMAGE}:latest)
 
 # Or assert against specific policies
 kosli assert artifact ghcr.io/${IMAGE}:latest \
