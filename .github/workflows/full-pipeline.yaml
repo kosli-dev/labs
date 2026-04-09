@@ -25,7 +25,7 @@ jobs:
       - name: Test
         run: bash ci/unit-test-app.sh
       - name: Upload repo
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with: 
           name: code
           path: .
