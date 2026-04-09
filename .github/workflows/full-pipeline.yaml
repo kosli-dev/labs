@@ -35,7 +35,7 @@ jobs:
     needs: [Build]
     steps:
       - name: Download code
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: code
           path: .
@@ -53,7 +53,7 @@ jobs:
       packages: write
     steps:
     - name: Download code
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: code
         path: .
@@ -81,7 +81,7 @@ jobs:
     needs: Docker-image
     steps:
     - name: Download code
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: code
         path: .
@@ -105,7 +105,7 @@ jobs:
     needs: Docker-image
     steps:
     - name: Download code
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: code
         path: .
@@ -122,7 +122,7 @@ jobs:
     needs: Docker-image
     steps:
     - name: Download code
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: code
         path: .
@@ -139,7 +139,7 @@ jobs:
     needs: [Docker-image, Security-scan, Component-test, Performance-test]
     steps:
     - name: Download code
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: code 
         path: .
